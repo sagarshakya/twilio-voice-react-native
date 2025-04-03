@@ -6,17 +6,18 @@ import expo.modules.kotlin.jni.JavaScriptObject
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
 
+import com.twiliovoicereactnative.CallListenerProxy
+import com.twiliovoicereactnative.CallRecordDatabase
+import com.twiliovoicereactnative.VoiceApplicationProxy
 import java.util.UUID
 
 class ExpoModule : Module() {
-  private val log SDKLog(this.javaClass)
+  private val log = SDKLog(this.javaClass)
 
   override fun definition() = ModuleDefinition {
     Name("TwilioVoiceReactNative")
 
-    Function("voice_connect") {
-      accessToken: String ->
-
+    Function("voice_connect") { accessToken: String, notificationDisplayName: String ->
       val context = appContext.reactContext
       if (context == null) {
         return@Function
