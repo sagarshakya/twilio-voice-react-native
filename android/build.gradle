@@ -89,4 +89,6 @@ dependencies {
       because("kotlin-stdlib-jdk8 is now a part of kotlin-stdlib")
     }
   }
+  
+  implementation project(':expo-modules-core')
 }
