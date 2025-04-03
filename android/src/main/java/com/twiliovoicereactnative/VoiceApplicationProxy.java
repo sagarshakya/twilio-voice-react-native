@@ -18,7 +18,7 @@ import com.facebook.react.ReactPackage;
 public class VoiceApplicationProxy {
   private static final SDKLog logger = new SDKLog(VoiceApplicationProxy.class);
   private static VoiceApplicationProxy instance = null;
-  private Application context = null;
+  private Context context = null; // Changed from Application to Context
   private final CallRecordDatabase callRecordDatabase = new CallRecordDatabase();
   private AudioSwitchManager audioSwitchManager;
   private MediaPlayerManager mediaPlayerManager;
@@ -28,40 +28,46 @@ public class VoiceApplicationProxy {
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
       if (name.getClassName().equals(VoiceService.class.getName()))
-        voiceServiceApi = (VoiceService.VoiceServiceAPI)service;
+        voiceServiceApi = (VoiceService.VoiceServiceAPI) service;
     }
+
     @Override
     public void onServiceDisconnected(ComponentName name) {
       voiceServiceApi = null;
     }
   };
+
   public abstract static class VoiceReactNativeHost extends ReactNativeHost {
     public VoiceReactNativeHost(Application application) {
       super(application);
     }
+
     @Override
     protected List<ReactPackage> getPackages() {
       return List.of(new TwilioVoiceReactNativePackage());
     }
+
     public Application getAssociatedApplication() {
       return super.getApplication();
     }
   }
 
-  public VoiceApplicationProxy(VoiceReactNativeHost reactNativeHost) {
+  // New constructor accepting Context
+  public VoiceApplicationProxy(Context context) {
     if (null != instance) {
       logger.error("Voice application proxy already created!");
     }
     instance = this;
-    context = reactNativeHost.getAssociatedApplication();
+    this.context = context.getApplicationContext(); // Use application context to avoid memory leaks
   }
+
   public void onCreate() {
     logger.debug("onCreate(..) invoked");
-    // construct JS event engine
+    // Construct JS event engine
     jsEventEmitter = new JSEventEmitter();
-    // construct notification channels
+    // Construct notification channels
     NotificationUtility.createNotificationChannels(context);
-    // launch and bind to voice call service
+    // Launch and bind to voice call service
     context.bindService(
       new Intent(context, VoiceService.class),
       voiceServiceObserver,
@@ -71,14 +77,15 @@ public class VoiceApplicationProxy {
     mediaPlayerManager = new MediaPlayerManager(context);
     audioSwitchManager.start();
   }
+
   public void onTerminate() {
     logger.debug("onTerminate(..) invoked");
-    // shutdown notificaiton channels
+    // Shutdown notification channels
     NotificationUtility.destroyNotificationChannels(context);
-    // shutdown audioswitch & media manager
+    // Shutdown audio switch & media manager
     audioSwitchManager.stop();
-    // verify that no call records are leaked
-    for (CallRecord callRecord: callRecordDatabase.getCollection()) {
+    // Verify that no call records are leaked
+    for (CallRecord callRecord : callRecordDatabase.getCollection()) {
       logger.warning(
         String.format(
           "Call Record leaked: { uuid: %s callSid: %s }",
@@ -87,15 +94,19 @@ public class VoiceApplicationProxy {
     }
     callRecordDatabase.clear();
   }
+
   static CallRecordDatabase getCallRecordDatabase() {
     return VoiceApplicationProxy.instance.callRecordDatabase;
   }
+
   static AudioSwitchManager getAudioSwitchManager() {
     return VoiceApplicationProxy.instance.audioSwitchManager;
   }
+
   static MediaPlayerManager getMediaPlayerManager() {
     return VoiceApplicationProxy.instance.mediaPlayerManager;
   }
+
   static JSEventEmitter getJSEventEmitter() {
     return VoiceApplicationProxy.instance.jsEventEmitter;
   }
