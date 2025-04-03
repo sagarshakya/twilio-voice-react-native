@@ -38,7 +38,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
-class CallListenerProxy implements Call.Listener {
+public class CallListenerProxy implements Call.Listener {
   private static final SDKLog logger = new SDKLog(CallListenerProxy.class);
   private final UUID uuid;
   private final Context context;
