@@ -35,9 +35,9 @@ public class VoiceActivityProxy {
   public void onCreate(Bundle ignoredSavedInstanceState) {
     logger.debug("onCreate(): invoked");
     // Ensure the microphone permission is enabled
-    if (!checkPermissions()) {
-      requestPermissions();
-    }
+    // if (!checkPermissions()) {
+    //   requestPermissions();
+    // }
     // These flags ensure that the activity can be launched when the screen is locked.
     Window window = context.getWindow();
     window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
@@ -53,6 +53,13 @@ public class VoiceActivityProxy {
     logger.debug("onNewIntent(...): invoked");
     handleIntent(intent);
   }
+
+  public void requestPermissionsManually() {
+    if (!checkPermissions()) {
+      requestPermissions();
+    }
+  }
+
   private void requestPermissions() {
     List<String> permissionsRequestList = new Vector<>();
     for (final String permission: VoiceActivityProxy.permissionList) {
